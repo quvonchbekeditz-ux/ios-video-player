@@ -1,0 +1,502 @@
+/* Apple iOS 18 Design System & Glassmorphism Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    --ios-bg: #090a0f;
+    --ios-card: rgba(22, 24, 35, 0.7);
+    --ios-card-hover: rgba(35, 38, 55, 0.85);
+    --ios-border: rgba(255, 255, 255, 0.08);
+    --ios-border-hover: rgba(255, 255, 255, 0.18);
+    --ios-glass: rgba(18, 20, 29, 0.75);
+    --ios-glass-heavy: rgba(12, 14, 20, 0.92);
+    --ios-accent: #0A84FF;
+    --ios-accent-gradient: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
+    --ios-text: #FFFFFF;
+    --ios-text-secondary: rgba(255, 255, 255, 0.6);
+    --ios-text-muted: rgba(255, 255, 255, 0.4);
+    --ios-success: #30D158;
+    --ios-warning: #FFD60A;
+    --ios-danger: #FF453A;
+    --ios-purple: #BF5AF2;
+    --ios-blur: 24px;
+    --ios-radius-sm: 10px;
+    --ios-radius-md: 16px;
+    --ios-radius-lg: 24px;
+    --ios-radius-xl: 32px;
+}
+
+/* Themes */
+body.theme-light {
+    --ios-bg: #F2F2F7;
+    --ios-card: rgba(255, 255, 255, 0.8);
+    --ios-card-hover: rgba(255, 255, 255, 0.95);
+    --ios-border: rgba(0, 0, 0, 0.08);
+    --ios-border-hover: rgba(0, 0, 0, 0.15);
+    --ios-glass: rgba(255, 255, 255, 0.82);
+    --ios-glass-heavy: rgba(245, 245, 247, 0.95);
+    --ios-accent: #007AFF;
+    --ios-text: #1C1C1E;
+    --ios-text-secondary: rgba(0, 0, 0, 0.65);
+    --ios-text-muted: rgba(0, 0, 0, 0.4);
+}
+
+body.theme-oled {
+    --ios-bg: #000000;
+    --ios-card: rgba(14, 14, 14, 0.85);
+    --ios-card-hover: rgba(24, 24, 24, 0.95);
+    --ios-border: rgba(255, 255, 255, 0.05);
+    --ios-glass: rgba(10, 10, 10, 0.9);
+    --ios-glass-heavy: rgba(0, 0, 0, 0.98);
+}
+
+body.theme-purple {
+    --ios-bg: #0d0a1a;
+    --ios-card: rgba(30, 23, 50, 0.7);
+    --ios-card-hover: rgba(45, 35, 75, 0.85);
+    --ios-accent: #BF5AF2;
+    --ios-accent-gradient: linear-gradient(135deg, #BF5AF2 0%, #FF375F 100%);
+}
+
+body.theme-titanium {
+    --ios-bg: #141311;
+    --ios-card: rgba(36, 33, 28, 0.75);
+    --ios-card-hover: rgba(50, 46, 39, 0.9);
+    --ios-accent: #D4AF37;
+    --ios-accent-gradient: linear-gradient(135deg, #E5C158 0%, #A67C1E 100%);
+}
+
+body.theme-neon {
+    --ios-bg: #050d12;
+    --ios-card: rgba(10, 30, 40, 0.7);
+    --ios-card-hover: rgba(15, 45, 60, 0.85);
+    --ios-accent: #00F0FF;
+    --ios-accent-gradient: linear-gradient(135deg, #00F0FF 0%, #00FF88 100%);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+body {
+    background-color: var(--ios-bg);
+    color: var(--ios-text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+    background: var(--ios-card);
+    backdrop-filter: blur(var(--ios-blur)) saturate(190%);
+    -webkit-backdrop-filter: blur(var(--ios-blur)) saturate(190%);
+    border: 1px solid var(--ios-border);
+    border-radius: var(--ios-radius-md);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-heavy {
+    background: var(--ios-glass-heavy);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid var(--ios-border);
+    border-radius: var(--ios-radius-lg);
+}
+
+.glass-pill {
+    background: var(--ios-card);
+    backdrop-filter: blur(var(--ios-blur));
+    -webkit-backdrop-filter: blur(var(--ios-blur));
+    border: 1px solid var(--ios-border);
+    border-radius: 9999px;
+    padding: 6px 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-pill:hover {
+    background: var(--ios-card-hover);
+    border-color: var(--ios-border-hover);
+    transform: translateY(-1px);
+}
+
+/* iOS Dynamic Island */
+.dynamic-island {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%) scale(1);
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(40px) saturate(210%);
+    -webkit-backdrop-filter: blur(40px) saturate(210%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+    border-radius: 40px;
+    height: 38px;
+    min-width: 160px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: top center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dynamic-island.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
+}
+
+.dynamic-island.expanded {
+    height: 60px;
+    min-width: 320px;
+    padding: 0 22px;
+    border-radius: 30px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Video Card in Grid */
+.video-card {
+    background: var(--ios-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--ios-border);
+    border-radius: var(--ios-radius-md);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.video-card:hover {
+    transform: translateY(-4px) scale(1.015);
+    background: var(--ios-card-hover);
+    border-color: var(--ios-border-hover);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(10, 132, 255, 0.15);
+}
+
+.thumb-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d0f17;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.video-card:hover .thumb-img {
+    transform: scale(1.06);
+}
+
+/* Progress bar inside video card */
+.card-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--ios-accent);
+    box-shadow: 0 0 8px var(--ios-accent);
+    z-index: 5;
+}
+
+/* iOS Range Sliders */
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.12);
+    height: 6px;
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+    transition: height 0.2s ease, background 0.2s ease;
+}
+
+input[type=range]:hover {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+    box-shadow: 0 0 12px var(--ios-accent);
+}
+
+/* iOS Timeline Scrubber */
+.timeline-track {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: height 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-container:hover .timeline-track {
+    height: 10px;
+}
+
+.timeline-buffered {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+.timeline-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--ios-accent-gradient);
+    border-radius: 9999px;
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--ios-accent);
+}
+
+.timeline-thumb {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    transform: translate(-50%, -50%) scale(0);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px var(--ios-accent);
+    pointer-events: none;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-container:hover .timeline-thumb {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* A-B Loop Indicator on timeline */
+.timeline-loop-range {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(191, 90, 242, 0.45);
+    border-left: 2px solid #BF5AF2;
+    border-right: 2px solid #BF5AF2;
+    pointer-events: none;
+}
+
+/* Hover Preview Tooltip */
+.hover-preview-box {
+    position: absolute;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: rgba(12, 14, 20, 0.94);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 100;
+}
+
+.hover-preview-box.visible {
+    opacity: 1;
+}
+
+/* Double click ripple effect */
+.ripple-wave {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    pointer-events: none;
+    animation: rippleAnim 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes rippleAnim {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.6);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50%) scale(1.3);
+    }
+}
+
+/* Modal Sheets */
+.ios-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ios-modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.ios-modal-sheet {
+    background: var(--ios-glass-heavy);
+    backdrop-filter: blur(36px) saturate(200%);
+    border: 1px solid var(--ios-border);
+    border-radius: var(--ios-radius-lg);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.1);
+    transform: translateY(30px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.ios-modal-overlay.open .ios-modal-sheet {
+    transform: translateY(0) scale(1);
+}
+
+/* Side Drawer (Subtitle Transcript, Bookmarks) */
+.ios-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    background: var(--ios-glass-heavy);
+    backdrop-filter: blur(40px);
+    border-left: 1px solid var(--ios-border);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    box-shadow: -16px 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.ios-drawer.open {
+    transform: translateX(0);
+}
+
+/* Aspect Ratio Modifiers */
+.video-fit { object-fit: contain !important; }
+.video-fill { object-fit: cover !important; }
+.video-stretch { object-fit: fill !important; }
+.video-16-9 { aspect-ratio: 16 / 9; object-fit: contain; }
+.video-4-3 { aspect-ratio: 4 / 3; object-fit: contain; }
+.video-21-9 { aspect-ratio: 21 / 9; object-fit: contain; }
+
+/* Custom Subtitles styling */
+::cue {
+    background: rgba(0, 0, 0, 0.75);
+    color: #FFFFFF;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    border-radius: 8px;
+    padding: 4px 10px;
+}
+
+/* Explicit Explorer Content Scrolling */
+#explorerContent {
+    flex: 1 1 0%;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+#explorerContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+#explorerContent::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+#explorerContent::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+#explorerContent::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.45);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}

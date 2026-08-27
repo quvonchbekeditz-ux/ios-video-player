@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS Super Video Player</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ios-bg': 'var(--ios-bg)',
+                        'ios-card': 'var(--ios-card)',
+                        'ios-blue': '#0A84FF',
+                        'ios-green': '#30D158',
+                        'ios-indigo': '#5E5CE6',
+                        'ios-orange': '#FF9F0A',
+                        'ios-pink': '#FF375F',
+                        'ios-purple': '#BF5AF2',
+                        'ios-red': '#FF453A',
+                        'ios-teal': '#64D2FF',
+                        'ios-yellow': '#FFD60A',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="theme-default h-screen w-screen overflow-hidden select-none flex flex-col font-sans">
+
+    <!-- DYNAMIC ISLAND NOTIFICATION PILL -->
+    <div class="dynamic-island-container">
+        <div id="dynamicIsland" class="dynamic-island flex items-center justify-between px-4 py-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <i id="dynamicIslandIcon" data-lucide="play" class="w-4 h-4 text-ios-blue flex-shrink-0"></i>
+                <span id="dynamicIslandText" class="text-xs font-semibold text-white truncate max-w-xs">iOS Video Player</span>
+            </div>
+            <div id="dynamicIslandBar" class="hidden w-24 h-1.5 bg-white/20 rounded-full overflow-hidden ml-3">
+                <div id="dynamicIslandProgress" class="h-full bg-ios-blue rounded-full transition-all duration-150" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="appContainer" class="flex-1 flex min-h-0 overflow-hidden relative">
+
+        <!-- SIDEBAR (iOS Glass Sidebar) -->
+        <aside class="w-64 glass-sidebar p-4 flex flex-col justify-between border-r border-white/10 z-10 flex-shrink-0">
+            <div class="space-y-6 overflow-y-auto pr-1 no-scrollbar">
+                
+                <!-- Brand & Logo -->
+                <div class="flex items-center justify-between px-2 pt-1">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-ios-blue via-ios-purple to-ios-pink flex items-center justify-center shadow-lg shadow-ios-blue/20">
+                            <i data-lucide="play" class="w-4 h-4 text-white fill-white translate-x-0.5"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-sm font-bold text-white tracking-wide">iPlayer Pro</h1>
+                            <p class="text-[10px] text-white/50 font-medium">Apple Vision Edition</p>
+                        </div>
+                    </div>
+                    <button onclick="openModal('themeModal')" class="p-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition" title="Mavzular">
+                        <i data-lucide="palette" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Logical Drives (Windows C:\, D:\ etc) -->
+                <div>
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-white/40 px-2 mb-2 flex items-center justify-between">
+                        <span>Mavjud Disklar</span>
+                        <button onclick="fetchDrivesAndSystemFolders()" class="hover:text-white transition" title="Yangilash">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <div id="drivesList" class="space-y-1">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- System Folders -->
+                <div>
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-white/40 px-2 mb-2">Tizim Jildlari</div>
+                    <div id="systemFoldersList" class="space-y-1">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Library Views -->
+                <div>
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-white/40 px-2 mb-2">Mediateka</div>
+                    <div class="space-y-1">
+                        <button onclick="showLibraryView('history')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition group text-left">
+                            <i data-lucide="history" class="w-4 h-4 text-ios-orange group-hover:scale-110 transition"></i>
+                            <span>Ko'rish Tarixi</span>
+                        </button>
+                        <button onclick="showLibraryView('favorites')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition group text-left">
+                            <i data-lucide="heart" class="w-4 h-4 text-ios-pink group-hover:scale-110 transition"></i>
+                            <span>Sevimlilar</span>
+                        </button>
+                        <button onclick="showLibraryView('bookmarks')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition group text-left">
+                            <i data-lucide="bookmark" class="w-4 h-4 text-ios-yellow group-hover:scale-110 transition"></i>
+                            <span>Xatcho'plar</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Tools -->
+            <div class="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-white/60">
+                <button onclick="openModal('shortcutsModal')" class="flex items-center gap-2 hover:text-white transition">
+                    <i data-lucide="keyboard" class="w-4 h-4"></i>
+                    <span>Tugmalar</span>
+                </button>
+                <button onclick="openModal('equalizerModal')" class="flex items-center gap-2 hover:text-white transition">
+                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                    <span>Ekvalayzer</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN FILE EXPLORER AREA -->
+        <main class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+            
+            <!-- Top Search & Navigation Toolbar -->
+            <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between gap-4 flex-shrink-0">
+                
+                <!-- History Back/Forward & Breadcrumbs -->
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
+                        <button onclick="navHistoryBack()" class="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition" title="Orqaga">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="navHistoryForward()" class="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition" title="Oldinga">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="navigateHome()" class="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition" title="Bosh sahifa">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Breadcrumbs trail -->
+                    <div id="breadcrumbBar" class="flex items-center gap-1 text-xs text-white/70 overflow-x-auto no-scrollbar py-1">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Search Input & Deep Scan -->
+                <div class="flex items-center gap-3">
+                    <div class="relative w-64">
+                        <i data-lucide="search" class="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input id="searchInput" type="text" placeholder="Videolarni qidirish..." class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-8 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-ios-blue focus:bg-white/10 transition">
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+
+                    <button id="deepScanBtn" onclick="toggleDeepScan()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-medium text-white/70 hover:text-white transition" title="Chuqur qidiruv (barcha ichki jildlarni skanerlash)">
+                        <i data-lucide="folder-search" class="w-3.5 h-3.5 text-ios-purple"></i>
+                        <span>Deep Scan</span>
+                    </button>
+
+                    <!-- View Switcher (Grid / List) -->
+                    <div class="flex items-center bg-white/5 border border-white/10 rounded-xl p-1">
+                        <button id="viewGridBtn" onclick="setViewMode('grid')" class="p-1.5 rounded-lg bg-white/20 text-white transition" title="Katakcha ko'rinishi">
+                            <i data-lucide="grid" class="w-4 h-4"></i>
+                        </button>
+                        <button id="viewListBtn" onclick="setViewMode('list')" class="p-1.5 rounded-lg text-white/50 hover:text-white transition" title="Ro'yxat ko'rinishi">
+                            <i data-lucide="list" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Filters & Sorting Bar -->
+            <div class="px-6 py-3 flex items-center justify-between border-b border-white/5 flex-shrink-0 text-xs">
+                
+                <!-- Format Filter Chips -->
+                <div class="flex items-center gap-2">
+                    <span class="text-white/40 font-semibold uppercase tracking-wider text-[10px]">Format:</span>
+                    <button onclick="setFormatFilter('all')" class="format-chip active px-3 py-1 rounded-full text-xs font-medium bg-ios-blue text-white transition">Barchasi</button>
+                    <button onclick="setFormatFilter('mp4')" class="format-chip px-3 py-1 rounded-full text-xs font-medium bg-white/5 hover:bg-white/10 text-white/70 transition">MP4</button>
+                    <button onclick="setFormatFilter('mkv')" class="format-chip px-3 py-1 rounded-full text-xs font-medium bg-white/5 hover:bg-white/10 text-white/70 transition">MKV</button>
+                    <button onclick="setFormatFilter('webm')" class="format-chip px-3 py-1 rounded-full text-xs font-medium bg-white/5 hover:bg-white/10 text-white/70 transition">WEBM</button>
+                    <button onclick="setFormatFilter('mov')" class="format-chip px-3 py-1 rounded-full text-xs font-medium bg-white/5 hover:bg-white/10 text-white/70 transition">MOV</button>
+                    <button onclick="setFormatFilter('avi')" class="format-chip px-3 py-1 rounded-full text-xs font-medium bg-white/5 hover:bg-white/10 text-white/70 transition">AVI</button>
+                </div>
+
+                <!-- Sorting Dropdown -->
+                <div class="flex items-center gap-3">
+                    <span class="text-white/40 font-semibold uppercase tracking-wider text-[10px]">Saralash:</span>
+                    <select onchange="changeSort(this.value)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-1 text-xs text-white focus:outline-none focus:border-ios-blue transition">
+                        <option value="name_asc">Nom bo'yicha (A-Z)</option>
+                        <option value="name_desc">Nom bo'yicha (Z-A)</option>
+                        <option value="date_desc">Eng yangi</option>
+                        <option value="date_asc">Eng eski</option>
+                        <option value="size_desc">Eng katta hajm</option>
+                        <option value="size_asc">Eng kichik hajm</option>
+                    </select>
+
+                    <button onclick="playAllInFolder()" class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-ios-blue hover:bg-blue-600 text-white font-semibold shadow-md shadow-ios-blue/20 transition active:scale-95">
+                        <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>
+                        <span>Barchasini ijro etish</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area (Scrollable Files & Folders) -->
+            <div id="explorerContent" class="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
+                
+                <!-- Folders Sub-Section -->
+                <div id="foldersSection">
+                    <div class="text-xs font-bold text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>Jildlar</span>
+                        <span id="foldersCount" class="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/70 font-mono">0</span>
+                    </div>
+                    <div id="foldersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <!-- Folders rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Video Files Sub-Section -->
+                <div>
+                    <div class="text-xs font-bold text-white/50 uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span>Videolar</span>
+                            <span id="videosCount" class="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/70 font-mono">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid View Container -->
+                    <div id="videosGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        <!-- Videos rendered by JS -->
+                    </div>
+
+                    <!-- List View Container -->
+                    <div id="videosList" class="hidden">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="text-white/40 border-b border-white/10 pb-2">
+                                    <th class="p-3 pl-4 font-semibold">Video Nomi</th>
+                                    <th class="p-3 font-semibold">Format</th>
+                                    <th class="p-3 font-semibold">Hajmi</th>
+                                    <th class="p-3 font-semibold">O'zgartirilgan sana</th>
+                                    <th class="p-3 pr-4 font-semibold text-right">Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="videosListBody" class="divide-y divide-white/5 text-white/80">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+                        <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-white/30 mb-4 border border-white/10">
+                            <i data-lucide="video-off" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">Videolar topilmadi</h3>
+                        <p class="text-xs text-white/50 max-w-sm">Ushbu jildda video fayllar mavjud emas yoki qidiruv natijasi bo'sh.</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Explorer Status Bar -->
+            <footer class="h-8 border-t border-white/10 px-6 flex items-center justify-between text-[11px] text-white/40 flex-shrink-0">
+                <span id="statusBarCount">0 ta video</span>
+                <span class="font-mono">iOS Video Player Studio Engine</span>
+            </footer>
+
+        </main>
+
+    </div>
+
+
+﻿    <!-- FULLSCREEN VIDEO PLAYER OVERLAY -->
+    <div id="playerOverlay" class="fixed inset-0 bg-black z-50 transition-all duration-300 opacity-0 pointer-events-none scale-95 flex flex-col justify-between overflow-hidden select-none">
+        
+        <!-- TOP PLAYER BAR (iOS Frosted Glass Navigation) -->
+        <header id="playerHeader" class="player-hud-header p-4 flex items-center justify-between z-30 transition-opacity duration-300">
+            <div class="flex items-center gap-3 min-w-0">
+                <button onclick="closePlayer()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white hover:scale-105 active:scale-95 transition" title="Orqaga (Explorer)">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                </button>
+                <div class="min-w-0">
+                    <h2 id="playerVideoTitle" class="text-sm font-bold text-white truncate max-w-md drop-shadow">Video Nomi</h2>
+                    <div class="flex items-center gap-2 text-[11px] text-white/60">
+                        <span id="playerResBadge" class="px-1.5 py-0.5 rounded bg-white/20 font-mono text-[10px] text-white font-bold uppercase">1080P</span>
+                        <span id="playerAudioTrackLabel">Stereo Audio</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Player Actions -->
+            <div class="flex items-center gap-2">
+                <button onclick="openMediaInfo()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white transition" title="Video haqida ma'lumot">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                </button>
+                <button onclick="takeScreenshot()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white transition" title="HD Skrinshot olish (S)">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                </button>
+                <button onclick="quickAddBookmark()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white transition" title="Xatcho'p qo'shish (B)">
+                    <i data-lucide="bookmark-plus" class="w-4 h-4"></i>
+                </button>
+                <button onclick="togglePiP()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white transition" title="Rasm ichida rasm (PiP)">
+                    <i data-lucide="picture-in-picture" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleFullscreen()" class="p-2.5 rounded-full glass-btn text-white/80 hover:text-white transition" title="To'liq ekran (F)">
+                    <i data-lucide="maximize" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CENTER VIDEO VIEWPORT & GESTURE ZONE -->
+        <div id="videoViewport" class="relative flex-1 flex items-center justify-center overflow-hidden cursor-pointer">
+            
+            <video id="mainVideo" class="max-w-full max-h-full transition-all duration-200" playsinline></video>
+
+            <!-- Subtitle Container Overlay -->
+            <div id="subtitleContainer" class="absolute bottom-16 left-0 right-0 flex justify-center px-8 pointer-events-none z-20">
+                <div id="subtitleText" class="subtitle-pill text-white font-medium text-center max-w-3xl drop-shadow-md"></div>
+            </div>
+
+            <!-- Double-Click Gesture Ripple Animations -->
+            <div id="rippleLeft" class="absolute left-10 top-1/2 -translate-y-1/2 hidden flex flex-col items-center justify-center w-24 h-24 rounded-full bg-white/20 backdrop-blur-md text-white pointer-events-none animate-ping">
+                <i data-lucide="rotate-ccw" class="w-8 h-8"></i>
+                <span class="text-xs font-bold font-mono mt-1">-10s</span>
+            </div>
+            <div id="rippleRight" class="absolute right-10 top-1/2 -translate-y-1/2 hidden flex flex-col items-center justify-center w-24 h-24 rounded-full bg-white/20 backdrop-blur-md text-white pointer-events-none animate-ping">
+                <i data-lucide="rotate-cw" class="w-8 h-8"></i>
+                <span class="text-xs font-bold font-mono mt-1">+10s</span>
+            </div>
+
+            <!-- Next Episode Auto-Play Card -->
+            <div id="nextEpisodeCard" class="hidden absolute bottom-24 right-8 glass-panel p-4 rounded-2xl max-w-xs z-30 shadow-2xl animate-fade-in">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-bold uppercase text-ios-blue tracking-wider">Keyingi video</span>
+                    <button onclick="cancelNextEpisode()" class="text-white/40 hover:text-white text-xs">Bekor qilish</button>
+                </div>
+                <div id="nextVideoTitle" class="text-xs font-bold text-white truncate mb-3">Keyingi qism nomi</div>
+                <div class="flex items-center gap-2">
+                    <button onclick="playNextEpisodeNow()" class="flex-1 py-1.5 rounded-xl bg-ios-blue hover:bg-blue-600 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+                        <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>
+                        <span>Ijro (<span id="nextCountdownSec">5</span>s)</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM CONTROLS PANEL (iOS Control Center Island) -->
+        <footer id="playerControls" class="player-hud-footer p-6 pt-0 z-30 transition-opacity duration-300 space-y-3">
+            
+            <!-- Scrub Bar & Timeline -->
+            <div class="relative flex flex-col gap-1 group">
+                
+                <!-- Hover Preview Thumbnail Popup -->
+                <div id="hoverPreviewBox" class="hover-preview-box">
+                    <span id="hoverPreviewTime" class="text-[11px] font-mono font-bold text-white">00:00</span>
+                </div>
+
+                <div id="timelineContainer" class="relative w-full h-2 bg-white/20 rounded-full cursor-pointer transition-all duration-200 group-hover:h-3" onclick="seekTimeline(event)" onmousemove="handleTimelineHover(event)" onmouseleave="hideTimelinePreview()">
+                    <!-- Buffered bar -->
+                    <div id="timelineBuffered" class="absolute left-0 top-0 h-full bg-white/30 rounded-full transition-all duration-300" style="width: 0%;"></div>
+                    <!-- Played bar -->
+                    <div id="timelineProgress" class="absolute left-0 top-0 h-full bg-gradient-to-r from-ios-blue to-ios-purple rounded-full" style="width: 0%;"></div>
+                    <!-- A-B loop segment highlight -->
+                    <div id="timelineLoopRange" class="hidden absolute top-0 h-full bg-ios-yellow/50 rounded-full pointer-events-none"></div>
+                    <!-- Thumb indicator -->
+                    <div id="timelineThumb" class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition -translate-x-1/2 pointer-events-none"></div>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] font-mono text-white/70 px-1 pt-1">
+                    <span id="currentTimeLabel" class="cursor-pointer hover:text-white" onclick="toggleTimeDisplayMode()">00:00</span>
+                    <span id="totalDurationLabel">00:00</span>
+                </div>
+            </div>
+
+            <!-- Main Control Buttons Row -->
+            <div class="glass-panel p-3 rounded-2xl flex items-center justify-between gap-4">
+                
+                <!-- Left Playback & Step Controls -->
+                <div class="flex items-center gap-2">
+                    <button onclick="playPreviousInPlaylist()" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Oldingi video">
+                        <i data-lucide="skip-back" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="seekRelative(-10)" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="10 soniya orqaga">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="togglePlay()" id="playPauseBtn" class="p-3 rounded-2xl bg-white text-black hover:scale-105 active:scale-95 shadow-xl transition flex items-center justify-center" title="Ijro / Pauza (Space)">
+                        <i id="playPauseIcon" data-lucide="play" class="w-5 h-5 fill-black translate-x-0.5"></i>
+                    </button>
+                    <button onclick="seekRelative(10)" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="10 soniya oldinga">
+                        <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="playNextInPlaylist()" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Keyingi video">
+                        <i data-lucide="skip-forward" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <!-- Frame Stepping -->
+                    <div class="hidden sm:flex items-center bg-white/5 rounded-xl p-0.5 ml-2 border border-white/10">
+                        <button onclick="stepFrame(-1)" class="px-2 py-1 text-[10px] font-mono text-white/70 hover:text-white hover:bg-white/10 rounded-lg" title="1 kadr orqaga (,)">◀ 1F</button>
+                        <button onclick="stepFrame(1)" class="px-2 py-1 text-[10px] font-mono text-white/70 hover:text-white hover:bg-white/10 rounded-lg" title="1 kadr oldinga (.)">1F ▶</button>
+                    </div>
+                </div>
+
+                <!-- Center Speed, Aspect & A-B Loop Controls -->
+                <div class="flex items-center gap-2">
+                    <button onclick="openModal('speedModal')" id="speedIndicatorBtn" class="px-3 py-1.5 rounded-xl glass-btn text-xs font-bold text-white/90 hover:text-white transition" title="Ijro tezligi">
+                        1.0x
+                    </button>
+                    <button onclick="cycleAspectRatio()" id="aspectRatioBtn" class="px-3 py-1.5 rounded-xl glass-btn text-xs font-bold text-white/90 hover:text-white transition" title="Ekran nisbati (Fit, Fill, 16:9)">
+                        FIT
+                    </button>
+                    <button onclick="toggleABRepeat()" id="abRepeatBtn" class="px-3 py-1.5 rounded-xl glass-btn text-xs font-medium text-white/90 hover:text-white transition flex items-center gap-1.5" title="A-B Takrorlash (Loop)">
+                        <i data-lucide="repeat" class="w-3.5 h-3.5 text-ios-yellow"></i>
+                        <span id="abRepeatStatus" class="text-[10px] text-white/40">Off</span>
+                    </button>
+                </div>
+
+                <!-- Right Audio, Subtitles & Studio Modals -->
+                <div class="flex items-center gap-2">
+                    
+                    <!-- Volume & Boost Slider -->
+                    <div class="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-1.5 border border-white/10">
+                        <button onclick="toggleMute()" class="text-white/80 hover:text-white">
+                            <i id="volumeIcon" data-lucide="volume-2" class="w-4 h-4"></i>
+                        </button>
+                        <input id="volumeSlider" type="range" min="0" max="3" step="0.05" value="1" oninput="changeVolume(this.value)" class="w-20 accent-ios-blue cursor-pointer" title="Ovoz (0% - 300% Boost)">
+                    </div>
+
+                    <button onclick="openModal('equalizerModal')" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Audio Studio & 10-Band EQ">
+                        <i data-lucide="sliders" class="w-4 h-4 text-ios-green"></i>
+                    </button>
+                    <button onclick="toggleDrawer('subtitleDrawer')" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Subtitrlar & Jonli Transkript">
+                        <i data-lucide="subtitles" class="w-4 h-4 text-ios-yellow"></i>
+                    </button>
+                    <button onclick="openModal('videoEffectsModal')" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Video Rang & Filtrlar">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-ios-purple"></i>
+                    </button>
+                    <button onclick="openModal('sleepTimerModal')" class="p-2 rounded-xl glass-btn text-white/80 hover:text-white transition" title="Uyqu taymeri">
+                        <i data-lucide="moon" class="w-4 h-4 text-ios-teal"></i>
+                    </button>
+                </div>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+
+﻿    <!-- MODALS & DRAWERS -->
+
+    <!-- Equalizer Modal -->
+    <div id="equalizerModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'equalizerModal')">
+        <div class="ios-modal-sheet w-full max-w-xl p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-ios-green/20 text-ios-green">
+                        <i data-lucide="sliders" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold">Studio Audio & 10-Polosali Ekvalayzer</h3>
+                        <p class="text-xs text-white/50">Yuqori sifatli ovoz effektlari va 300% ovoz kuchaytirgich</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('equalizerModal')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="text-xs font-bold uppercase text-white/50 mb-2">Ovoz Rejimlari (Presets)</div>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <button onclick="setEqPreset('flat')" class="eq-preset-btn active px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold">Flat</button>
+                    <button onclick="setEqPreset('bass')" class="eq-preset-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-semibold">Bass Boost</button>
+                    <button onclick="setEqPreset('vocal')" class="eq-preset-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-semibold">Vocal/Dialog</button>
+                    <button onclick="setEqPreset('cinema')" class="eq-preset-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-semibold">Cinema</button>
+                    <button onclick="setEqPreset('rock')" class="eq-preset-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-semibold">Rock</button>
+                    <button onclick="setEqPreset('night')" class="eq-preset-btn px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-semibold">Night Mode</button>
+                </div>
+            </div>
+            <div class="mb-6">
+                <div class="text-xs font-bold uppercase text-white/50 mb-3">Chastotalar Sozlamasi (dB)</div>
+                <div id="eqSlidersGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-2 h-44 items-end bg-white/5 p-4 rounded-2xl border border-white/10"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold">Ovoz Kuchaytirgich (Volume Boost)</span>
+                        <span id="boostValLabel" class="text-xs font-bold text-ios-green">100%</span>
+                    </div>
+                    <input type="range" min="1" max="3" step="0.1" value="1" oninput="changeBoost(this.value)" class="w-full">
+                </div>
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold">Audio Sinxronizatsiya (Delay)</span>
+                        <span id="audioDelayValLabel" class="text-xs font-bold text-ios-blue">0.0s</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="adjustAudioDelay(-0.1)" class="px-2 py-1 rounded bg-white/10 text-xs">-0.1s</button>
+                        <input type="range" min="-5" max="5" step="0.1" value="0" oninput="changeAudioDelay(this.value)" class="w-full">
+                        <button onclick="adjustAudioDelay(0.1)" class="px-2 py-1 rounded bg-white/10 text-xs">+0.1s</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subtitle Drawer -->
+    <div id="subtitleDrawer" class="ios-drawer p-6 flex flex-col justify-between">
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="subtitles" class="w-5 h-5 text-ios-yellow"></i>
+                    <h3 class="text-base font-bold">Subtitrlar Studiyasi</h3>
+                </div>
+                <button onclick="toggleDrawer('subtitleDrawer')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="mb-4 flex-shrink-0">
+                <div class="text-xs font-bold uppercase text-white/50 mb-2">Mavjud Subtitrlar</div>
+                <select id="subtitleSelect" onchange="selectSubtitleTrack(this.value)" class="w-full bg-white/5 border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none mb-2">
+                    <option value="none">Subtitr o'chirilgan (None)</option>
+                </select>
+                <label class="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium cursor-pointer transition">
+                    <i data-lucide="upload" class="w-3.5 h-3.5 text-ios-yellow"></i>
+                    <span>Kompyuterdan .srt / .vtt yuklash</span>
+                    <input type="file" accept=".srt,.vtt,.ass" onchange="uploadCustomSubtitle(event)" class="hidden">
+                </label>
+            </div>
+            <div class="space-y-3 mb-4 p-3 bg-white/5 rounded-2xl border border-white/10 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/70">Shrift O'lchami</span>
+                    <input type="range" min="14" max="36" value="22" oninput="changeSubtitleSize(this.value)" class="w-32">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/70">Sinxron Kechikish</span>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="adjustSubSync(-0.5)" class="px-1.5 py-0.5 rounded bg-white/10 text-[10px]">-0.5s</button>
+                        <span id="subSyncLabel" class="text-xs font-mono font-bold text-ios-yellow">0.0s</span>
+                        <button onclick="adjustSubSync(0.5)" class="px-1.5 py-0.5 rounded bg-white/10 text-[10px]">+0.5s</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs font-bold uppercase text-white/50">Jonli Transkript</div>
+                    <span id="transcriptLinesCount" class="text-[10px] text-white/40">0 ta jumla</span>
+                </div>
+                <div id="transcriptContainer" class="flex-1 overflow-y-auto space-y-1.5 pr-1 no-scrollbar">
+                    <div class="text-center py-8 text-xs text-white/40">Subtitr yuklanganda barcha matnlar bu yerda ko'rinadi va bosish orqali sahnaga o'tish mumkin.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Filters Modal -->
+    <div id="videoEffectsModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'videoEffectsModal')">
+        <div class="ios-modal-sheet w-full max-w-lg p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-ios-purple/20 text-ios-purple">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold">Video Filtrlar & Ranglar Studiyasi</h3>
+                        <p class="text-xs text-white/50">Yorqinlik, kontrast, ko'zgu va HDR effektlar</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('videoEffectsModal')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="mb-5">
+                <div class="text-xs font-bold uppercase text-white/50 mb-2">Tayyor Rang Rejimlari</div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button onclick="setVideoFilterPreset('normal')" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold">Standart</button>
+                    <button onclick="setVideoFilterPreset('nightshift')" class="px-3 py-2 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-xs font-semibold">Night Shift</button>
+                    <button onclick="setVideoFilterPreset('hdr')" class="px-3 py-2 rounded-xl bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-xs font-semibold">OLED Cinema</button>
+                    <button onclick="setVideoFilterPreset('bw')" class="px-3 py-2 rounded-xl bg-gray-500/20 text-gray-300 hover:bg-gray-500/30 text-xs font-semibold">Noir B&W</button>
+                </div>
+            </div>
+            <div class="space-y-4 mb-5 bg-white/5 p-4 rounded-2xl border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/80 font-medium">Yorqinlik (Brightness)</span>
+                    <input type="range" id="filterBrightness" min="0.5" max="1.8" step="0.05" value="1.0" oninput="applyVideoFilters()" class="w-44">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/80 font-medium">Kontrast (Contrast)</span>
+                    <input type="range" id="filterContrast" min="0.5" max="2.0" step="0.05" value="1.0" oninput="applyVideoFilters()" class="w-44">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/80 font-medium">To'yinganlik (Saturation)</span>
+                    <input type="range" id="filterSaturation" min="0" max="2.5" step="0.1" value="1.0" oninput="applyVideoFilters()" class="w-44">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-white/80 font-medium">Zoom & Pan</span>
+                    <input type="range" id="filterZoom" min="1" max="3" step="0.1" value="1.0" oninput="changeVideoZoom(this.value)" class="w-44">
+                </div>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+                <button onclick="rotateVideo(90)" class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center justify-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span>90° Aylantirish</span>
+                </button>
+                <button onclick="toggleVideoFlip()" class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center justify-center gap-2">
+                    <i data-lucide="flip-horizontal" class="w-4 h-4"></i>
+                    <span>Ko'zgu (Mirror)</span>
+                </button>
+                <button onclick="resetVideoFilters()" class="py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-white/60">Tiklash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speed Modal -->
+    <div id="speedModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'speedModal')">
+        <div class="ios-modal-sheet w-full max-w-sm p-6 text-center">
+            <h3 class="text-base font-bold mb-1">Ijro Tezligi</h3>
+            <p class="text-xs text-white/50 mb-5">Ovoz ohangi buzilmagan holda tabiiy tezlik</p>
+            <div class="grid grid-cols-4 gap-2 mb-6">
+                <button onclick="setSpeed(0.5)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">0.5x</button>
+                <button onclick="setSpeed(0.75)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">0.75x</button>
+                <button onclick="setSpeed(1.0)" class="speed-btn active py-2 rounded-xl bg-ios-blue text-white text-xs font-bold">1.0x</button>
+                <button onclick="setSpeed(1.25)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">1.25x</button>
+                <button onclick="setSpeed(1.5)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">1.5x</button>
+                <button onclick="setSpeed(1.75)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">1.75x</button>
+                <button onclick="setSpeed(2.0)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">2.0x</button>
+                <button onclick="setSpeed(3.0)" class="speed-btn py-2 rounded-xl bg-white/5 hover:bg-white/20 text-xs font-bold">3.0x</button>
+            </div>
+            <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-white/70">Nozik sozlash</span>
+                    <span id="customSpeedLabel" class="text-xs font-bold text-ios-blue">1.0x</span>
+                </div>
+                <input type="range" min="0.1" max="4.0" step="0.1" value="1.0" oninput="setSpeed(parseFloat(this.value))" class="w-full">
+            </div>
+        </div>
+    </div>
+
+    <!-- Sleep Timer Modal -->
+    <div id="sleepTimerModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'sleepTimerModal')">
+        <div class="ios-modal-sheet w-full max-w-sm p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-ios-yellow/20 text-ios-yellow flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="moon" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold mb-1">Uyqu Taymeri (Sleep Timer)</h3>
+            <p class="text-xs text-white/50 mb-5">Belgilangan vaqtdan so'ng ijro avtomatik to'xtaydi</p>
+            <div class="space-y-2">
+                <button onclick="setSleepTimer(0)" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-semibold text-left px-4 flex items-center justify-between">
+                    <span>O'chirilgan (Off)</span>
+                    <i data-lucide="check" class="w-4 h-4 text-ios-blue"></i>
+                </button>
+                <button onclick="setSleepTimer(15)" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-semibold text-left px-4">15 daqiqadan so'ng</button>
+                <button onclick="setSleepTimer(30)" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-semibold text-left px-4">30 daqiqadan so'ng</button>
+                <button onclick="setSleepTimer(60)" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-semibold text-left px-4">1 soatdan so'ng</button>
+                <button onclick="setSleepTimer(-1)" class="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-xs font-semibold text-left px-4">Ushbu video tugaganda</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Modal -->
+    <div id="themeModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'themeModal')">
+        <div class="ios-modal-sheet w-full max-w-md p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-xl bg-ios-orange/20 text-ios-orange">
+                        <i data-lucide="palette" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold">iOS Dizayn Mavzulari</h3>
+                        <p class="text-xs text-white/50">O'zingizga yoqqan Apple uslubini tanlang</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('themeModal')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="setTheme('default')" class="p-3 rounded-2xl bg-[#090a0f] border-2 border-ios-blue text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-white">iOS Dark Glass</span>
+                    <span class="text-[10px] text-white/50">Standart qorong'u shaffoflar</span>
+                </button>
+                <button onclick="setTheme('light')" class="p-3 rounded-2xl bg-[#F2F2F7] border border-gray-300 text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-gray-900">iOS Light Frosted</span>
+                    <span class="text-[10px] text-gray-500">Yorqin Apple Cupertino</span>
+                </button>
+                <button onclick="setTheme('oled')" class="p-3 rounded-2xl bg-black border border-white/20 text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-white">OLED Pure Black</span>
+                    <span class="text-[10px] text-white/50">Haqiqiy chuqur qora</span>
+                </button>
+                <button onclick="setTheme('purple')" class="p-3 rounded-2xl bg-[#0d0a1a] border border-purple-500/40 text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-purple-300">Midnight Nebula</span>
+                    <span class="text-[10px] text-purple-400/50">Binafsharang kosmos</span>
+                </button>
+                <button onclick="setTheme('titanium')" class="p-3 rounded-2xl bg-[#141311] border border-yellow-600/40 text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-yellow-200">Titanium Gold</span>
+                    <span class="text-[10px] text-yellow-500/50">Apple Pro tilla</span>
+                </button>
+                <button onclick="setTheme('neon')" class="p-3 rounded-2xl bg-[#050d12] border border-cyan-500/40 text-left flex flex-col gap-2">
+                    <span class="text-xs font-bold text-cyan-300">Cyber Neon</span>
+                    <span class="text-[10px] text-cyan-400/50">Futuristik yorqinlik</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Info Modal -->
+    <div id="mediaInfoModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'mediaInfoModal')">
+        <div class="ios-modal-sheet w-full max-w-md p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="info" class="w-5 h-5 text-ios-blue"></i>
+                    <h3 class="text-base font-bold">Media Texnik Ma'lumotlari</h3>
+                </div>
+                <button onclick="closeModal('mediaInfoModal')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="mediaInfoContent" class="space-y-2.5 text-xs text-white/80"></div>
+            <div class="mt-6 pt-4 border-t border-white/10 flex justify-end gap-2">
+                <button onclick="revealCurrentFileInExplorer()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-2">
+                    <i data-lucide="folder-open" class="w-4 h-4"></i>
+                    <span>Windows Explorer'da ko'rsatish</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcutsModal" class="ios-modal-overlay" onclick="closeModalOnOverlay(event, 'shortcutsModal')">
+        <div class="ios-modal-sheet w-full max-w-lg p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="keyboard" class="w-5 h-5 text-ios-purple"></i>
+                    <h3 class="text-base font-bold">Klaviatura Tezkor Tugmalari</h3>
+                </div>
+                <button onclick="closeModal('shortcutsModal')" class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Ijro / Pauza</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">Space / K</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">To'liq Ekran</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">F</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">10s Oldinga / Orqaga</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">◀ / ▶</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Ovoz Balandligi</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">▲ / ▼</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Ovozni O'chirish</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">M</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">HD Skrinshot Olish</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">S</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Xatcho'p Qo'shish</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">B</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Kadrba-kadr</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">, va .</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Tezlik Sozlash</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">[ va ]</kbd>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded-xl bg-white/5">
+                    <span class="text-white/70">Ekran Nisbati</span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 font-mono font-bold">A</kbd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/player.js"></script>
+</body>
+</html>
